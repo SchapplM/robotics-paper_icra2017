@@ -1,0 +1,23 @@
+% !TEX root = collhdl_ICRA_17.tex
+
+\section{Conclusion}
+\label{sec:conclusion}
+In this paper, we propose a unified framework for collision detection, isolation and identification of generalized external forces acting along a humanoid robot.
+Apart from standard proprioceptive sensing, the proposed scheme makes use of joint torque measurements and acceleration estimates.
+Noticeably, it is shown how a generalized momentum observer may be used to calculate these quantities.
+As the consequential next step, information from load-compensated force/torque sensors, which can be located arbitrarily along the robot structure, is integrated.
+Considering ideal measurements it is shown that estimating the position of a single contact for humanoid robots is possible without any additional sensors.
+The positions of multiple concurrent contacts may be estimated with additional force/torque sensors, or, under certain conditions, even without additional sensors.
+
+Future work will cover analyzing the robustness of our scheme in more realistic simulations, in particular with respect to model uncertainties and sensor noise, as well as real world setups.
+Also, the complexity and execution time of the algorithm on a real-time enabled system has to be examined closely.
+Furthermore, we will investigate the further systematic fusion of joint torque and force/torque sensing in the collision handling context.
+Other open questions relate to the thorough yet practical handling of contacts with external moments such as surface contacts and dealing with singularities.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section*{APPENDIX}
+%
+%% Appendixes should appear before the acknowledgment.
+
+
+%\section*{ACKNOWLEDGMENT}

@@ -1,0 +1,611 @@
+% !TEX root = collhdl_ICRA_17.tex
+
+\section{Problem Formulation}
+\label{sec:task_description}
+
+\subsection{Floating Base Robot Model}
+\label{sec:float_base_model}
+
+A rigid humanoid robot can be modeled by
+%
+\begin{gather}
+\small
+\begin{pmatrix}
+\bm{M}_\mathrm{BB}(\bm{q}) & \bm{M}_\mathrm{BJ}(\bm{q}) \\
+\bm{M}_\mathrm{JB}(\bm{q}) & \bm{M}_\mathrm{JJ}(\bm{q}_\mathrm{J}) \\
+\end{pmatrix}
+\begin{pmatrix}
+\ddot{\bm{q}}_\mathrm{B} \\
+\ddot{\bm{q}}_\mathrm{J}
+\end{pmatrix}
++
+\begin{pmatrix}
+\bm{C}_\mathrm{B}(\bm{q},\dot{\bm{q}}) \\
+\bm{C}_\mathrm{J}(\bm{q},\dot{\bm{q}})
+\end{pmatrix}
+\begin{pmatrix}
+\dot{\bm{q}}_\mathrm{B} \\
+\dot{\bm{q}}_\mathrm{J}
+\end{pmatrix}
++
+\begin{pmatrix}
+\bm{g}_\mathrm{B}(\bm{q}) \\
+\bm{g}_\mathrm{J}(\bm{q}) \\
+\end{pmatrix} \nonumber \\
+ =
+\begin{pmatrix}
+\bm{0} \\
+\bm{\tau}_\mathrm{Jm} \\
+\end{pmatrix}
+-
+\begin{pmatrix}
+\bm{0} \\
+\bm{\tau}_\mathrm{Jf} \\
+\end{pmatrix}
++
+\begin{pmatrix}
+\bm{\tau}_\mathrm{Bext} \\
+\bm{\tau}_\mathrm{Jext} \\
+\end{pmatrix},
+\label{eqn:indyn}
+\end{gather}
+%
+where 
+%
+$\bm{q}_\mathrm{B}=\begin{pmatrix}\bm{r}_\mathrm{B} ^\mathrm{T}& \bm{\varphi}_\mathrm{B}^\mathrm{T}\end{pmatrix}^\mathrm{T}$
+%
+and 
+%
+$\bm{q}=\begin{pmatrix}\bm{q}_\mathrm{B}^\mathrm{T} & \bm{q}_\mathrm{J}^\mathrm{T}\end{pmatrix}^\mathrm{T}$
+%
+denote the generalized coordinates of the floating base and the full robot.
+They consist of the Cartesian base position $\bm{r}_\mathrm{B} \in \mathbb{R}^3$, Euler angle base orientation $\bm{\varphi}_\mathrm{B} \in \mathbb{R}^3$ and joint angles $\bm{q}_\mathrm{J} \in \mathbb{R}^{n_\mathrm{J}}$.
+Base and joint entries are marked with index ``B'' and ``J'', respectively.
+%
+Furthermore, (\ref{eqn:indyn}) can be written in the more compact form
+%
+\begin{equation}
+\bm{M}(\bm{q})\ddot{\bm{q}}+\bm{C}(\bm{q},\dot{\bm{q}})\dot{\bm{q}}+\bm{g}(\bm{q})=\bm{\tau}_\mathrm{m}-\bm{\tau}_\mathrm{f}+\bm{\tau}_\mathrm{ext}\;,
+\label{eqn:indyn_lumped}
+\end{equation}
+%
+where $\bm{M}(\bm{q})$ denotes the mass matrix, $\bm{C}(\bm{q},\dot{\bm{q}})$ the matrix of centrifugal and Coriolis terms and $\bm{g}(\bm{q})$ the gravity vector.
+The vectors $\bm{\tau}_\mathrm{m}$, $\bm{\tau}_\mathrm{f}$ and $\bm{\tau}_\mathrm{ext}$ denote the generalized motor, friction and external forces for the single contact case.
+%
+
+The external wrench $\bm{\mathcal{F}}_{\mathrm{ext}}$ acting on a point of contact $\bm{r}_{C}$ on robot link $i$ is projected via the corresponding geometric floating base Jacobian $\bm{J}(C,i)$ to the generalized external forces
+\begin{align}
+\bm{\tau}_{\mathrm{ext}}=&
+\begin{pmatrix} \bm{\tau}_{\mathrm{B,ext}}
+\\
+\bm{\tau}_{\mathrm{J,ext}}
+\end{pmatrix}
+=
+\bm{J}^\mathrm{T}(C,i)
+\bm{\mathcal{F}}_{\mathrm{ext}} \\
+=&
+\begin{pmatrix}
+\bm{I}_3 & - \bm{S}(\bm{r}_{BC}) \bm{J}_\omega & \bm{R} \bm{J}_{\mathrm{Jt}}(C,i)\\
+\bm{0} & \bm{J}_\omega &  \bm{R} \bm{J}_{\mathrm{JR}}(C,i)
+\end{pmatrix}
+^\mathrm{T}
+\begin{pmatrix} \bm{f}_{\mathrm{ext}}
+\\
+\bm{m}_{\mathrm{ext}} \nonumber
+\end{pmatrix},
+\end{align}
+where 
+$\bm{S}(\cdot)$ denotes the skew-symmetric matrix operator,
+$\bm{r}_{BC}=-\bm{r}_{B}+\bm{r}_{C}$ denotes the vector from point $B$ to point $C$,
+$\bm{R}$ is the rotation matrix from robot base to world frame
+and the geometric joint Jacobian $[\bm{J}_{\mathrm{Jt}}^\mathrm{T},\bm{J}_{\mathrm{JR}}^\mathrm{T}]^\mathrm{T}$ relates 
+%
+$\dot{\bm{r}}_{C}=\bm{R}\bm{J}_{\mathrm{Jt}}(C,i)\dot{\bm{q}}_\mathrm{J}$
+and 
+%
+$\bm{\omega}_i=\bm{R}\bm{J}_{\mathrm{JR}}(C,i)\dot{\bm{q}}_\mathrm{J}$
+%
+\cite{OttHenLee2013,BouyarmaneKhe2012}.
+Cartesian moments $\bm{m}_\mathrm{B}$ are projected to the base generalized rotation coordinates with the same angular velocity Jacobian $\bm{J}_\omega$ that relates the rotational base twist $\bm{\omega}_\mathrm{B}=\bm{J}_\omega(\bm{\varphi}_\mathrm{B})\dot{\bm{\varphi}}_\mathrm{B}$ to the derivative of the generalized coordinates for the chosen rotation representation $\dot{\bm{\varphi}}_\mathrm{B}$.
+Note that in the following all vectors are expressed in world frame.
+%
+\subsection{Collision Detection, Isolation and Identification}
+%
+In this paper a humanoid robot is considered to have dynamics according to (\ref{eqn:indyn_lumped}) and to be equipped with joint torque, position and velocity sensing as well as an arbitrary number of force/torque sensors placed in the kinematic chain, see Fig.~\ref{fig:humanoid_contact_situation}.
+In addition, the base orientation $\bm{\varphi}_\mathrm{B}$ and the base twist $\dot{\bm{x}}_\mathrm{B}$ can be measured.
+Now, the objective is to detect, isolate and identify any collision along the robot structure for possibly multiple collisions.
+In this context, collision \emph{detection} means to generate a number of binary signals indicating whether a collision is happening or not at a certain topological part of the robot.
+\emph{Isolation} denotes to find the contact location $\bm{r}_{C_k}$ for the $k$-th collision.
+\emph{Identification} aims for estimating the timely evolution of the generalized external forces $\bm{\tau}_{\mathrm{ext},k}(t)$ and the external contact wrenches $\bm{\mathcal{F}}_{\mathrm{ext},k}(t)$.
+In summary, the objective is to find all contact locations and the corresponding contact wrenches.
+%
+\begin{figure}
+\begin{center}
+\includegraphics{figures/humanoid_contact_situation}
+\end{center}
+\caption{Considered problem of a humanoid robot in multiple contact situation.
+External wrenches $\bm{\mathcal{F}}_{\mathrm{ext},k}$ are acting anywhere along its structure.
+Forces in the feet originate from locomotion, forces at the hands may originate from manipulation.
+Other external forces are caused by possibly unwanted collisions.
+Also a number of force/torque sensors $S_l$ (5 in this concrete example) are distributed arbitrarily along the robot structure.}\vspace*{-0.7cm}
+\label{fig:humanoid_contact_situation}
+\end{figure}
+
+Table~\ref{tab:sensors} lists the measurement quantities required to solve the problem and provides examples of suitable sensors.
+Note that joint acceleration is typically not measured.
+Furthermore, common acceleration sensors usually suffer from drift.
+%
+\begin{table}
+\vspace*{0.5cm}
+\caption{Measured quantities and sensors for the proposed collision detection, isolation and identification algorithm.}\label{tab:sensors}
+\begin{tabular}{|c|c|c|}
+\hline
+robot part & measurement quantity & typical sensor\\\hline
+base & $\bm{\varphi}_\mathrm{B},\dot{\bm{x}}_\mathrm{B}$ & gyroscope, Kalman estimator\\
+limbs & $\bm{\tau}_\mathrm{Jm},\bm{q}_\mathrm{J},\dot{\bm{q}}_\mathrm{J}$ & joint torque sensor, encoders\\
+ & $\bm{\mathcal{F}}_{S}$ & force/torque sensor\\
+end-effectors & $\bm{\mathcal{F}}_{S,\mathrm{distal}}$ & force/torque sensor\\\hline
+\end{tabular}\vspace*{-0.7cm}
+\end{table}
+
+
+
+\section{Collision Identification -- Part I}
+\label{sec:collision_identification_i}
+
+The first step of the proposed solution is to obtain an estimate $\hat{\bm{\tau}}_\varepsilon$ of the generalized external forces $\bm{\tau}_\mathrm{ext}$ generated by all contacts.
+This can be achieved with the generalized momentum observer from \cite{DeLucaMat2003,DeLucaMat2004,Haddadin2014}, which is defined as
+\begin{equation}
+\hat{\bm{\tau}}_\mathrm{\varepsilon}=\bm{K}_\mathrm{O}
+\left(
+\bm{M}(\bm{q})\dot{\bm{q}}
+-\int\limits_0^t
+ [\bm{\tau}_\mathrm{m}
+ -\bm{\gamma}(\bm{q},\dot{\bm{q}})
+ +\hat{\bm{\tau}}_\mathrm{\varepsilon}
+ ]\mathrm{d}\tilde{t} 
+ \right).
+\label{eqn:obs_qDD}
+\end{equation}
+%
+It generates an estimate $\hat{\bm{\tau}}_\varepsilon$ of the generalized external forces acting on the robot, where $\bm{K}_\mathrm{O}=\mathrm{diag}\{k_{\mathrm{O},i}\}>\bm{0}$ is the observer gain matrix and
+\begingroup % damit spacing in align angepasst werden kann
+\medmuskip=3mu
+\thinmuskip=3mu
+\thickmuskip=3mu
+\begin{align}
+\bm{\gamma}(\bm{q},\dot{\bm{q}}):=
+\bm{n}(\bm{q},\dot{\bm{q}})-\dot{\bm{M}}(\bm{q})\dot{\bm{q}}
+&=\bm{g}(\bm{q})
++\bm{C}(\bm{q},\dot{\bm{q}})\dot{\bm{q}}\nonumber
+-\dot{\bm{M}}(\bm{q})\dot{\bm{q}}\\
+&=
+\bm{g}(\bm{q})-\bm{C}^\mathrm{T}(\bm{q},\dot{\bm{q}})\dot{\bm{q}}\;
+\label{eqn:gamma}
+\end{align}
+\endgroup
+%
+due to the skew-symmetry of $\dot{\bm{M}}(\bm{q})-2\bm{C}(\bm{q},\dot{\bm{q}})$ \cite{DeLucaAlbHadHir2006}.
+Under ideal conditions, which means that $\bm{q}, \dot{\bm{q}}, \bm{M}(\bm{q}), \bm{C}(\bm{q},\dot{\bm{q}}), \bm{g}(\bm{q})$ are known exactly, the observer dynamics are decoupled and every component $\hat{\bm{\tau}}_{\varepsilon}$ follows the first order dynamics
+%
+\begin{equation}
+\bm{K}_\mathrm{O}^{-1}\hat{\dot{\bm{\tau}}}_{\varepsilon}+\hat{\bm{\tau}}_{\varepsilon}=\bm{\tau}_{\mathrm{ext}}\;.\label{eqn:obs_dynamic}
+\end{equation}
+%
+Therefore, $\hat{\bm{\tau}}_{\varepsilon}$ is simply a first order filtered version of $\bm{\tau}_{\mathrm{ext}}$.
+
+\subsection{Estimating Generalized Acceleration}
+
+In order to be able to determine as many contact wrenches and locations as possible, the external torques already isolated and identified by force/torque sensors are to be excluded from the observed generalized external forces $\hat{\bm{\tau}}_\varepsilon$ \cite{VorndammeSchToeHad2016}.
+Therefore, we need to compensate for the dynamic and static forces generated by the mass/inertia attached to each sensor.
+For this compensation, the acceleration in Cartesian space $\ddot{\bm{x}}_D$ of its center of mass $D$ is required.
+Assuming the sensor $S$ to be mounted on link $i$, it may simply be calculated via
+%
+\begin{equation}
+\ddot{\bm{x}}_D=\begin{pmatrix}
+\ddot{\bm{r}}_D\\\dot{\bm{\omega}}_D
+\end{pmatrix}=\bm{J}(D,i)\ddot{\bm{q}}+\dot{\bm{J}}(D,i)\dot{\bm{q}}\;.
+\label{eqn:accel_cart}
+\end{equation}
+%
+As one can see, the generalized acceleration $\ddot{\bm{q}}$ is needed to calculate the Cartesian acceleration.
+An estimate $\hat{\ddot{\bm{q}}}$ of $\ddot{\bm{q}}$ can be obtained from extending the disturbance observer (\ref{eqn:obs_qDD}).
+Using its inner state
+%
+\begin{equation}
+\hat{\dot{\bm{p}}}=\bm{M}(\bm{q})\hat{\ddot{\bm{q}}}+\dot{\bm{M}}(\bm{q})\dot{\bm{q}}=\bm{\tau}_\mathrm{m}
+ -\bm{\gamma}(\bm{q},\dot{\bm{q}})
+ +\hat{\bm{\tau}}_\mathrm{\varepsilon}\label{eqn:impulseD}
+\end{equation}
+%
+the estimated acceleration follows as
+%
+\begin{equation}
+\hat{\ddot{\bm{q}}}=\bm{M}(\bm{q})^{-1}(\hat{\dot{\bm{p}}}-\dot{\bm{M}}(\bm{q})\dot{\bm{q}})=
+\bm{M}(\bm{q})^{-1}(\bm{\tau}_\mathrm{m}-\bm{n}(\bm{q},\dot{\bm{q}})+\hat{\bm{\tau}}_\mathrm{\varepsilon})\;.
+\end{equation}
+%
+The dynamics of the acceleration error $\bm{e}:=\ddot{\bm{q}}-\hat{\ddot{\bm{q}}}$ can be derived using~(\ref{eqn:impulseD}):
+%
+\begin{align}
+\bm{e}&=\bm{M}(\bm{q})^{-1}(\dot{\bm{p}}-\dot{\bm{M}}(\bm{q})\dot{\bm{q}})-\bm{M}(\bm{q})^{-1}(\hat{\dot{\bm{p}}}-\dot{\bm{M}}(\bm{q})\dot{\bm{q}})\nonumber\\
+&=\bm{M}(\bm{q})^{-1}(\bm{\tau}_\mathrm{m}-\bm{n}(\bm{q},\dot{\bm{q}})+\bm{\tau}_\mathrm{\mathrm{ext}}-(\bm{\tau}_\mathrm{m}-\bm{n}(\bm{q},\dot{\bm{q}})+\hat{\bm{\tau}}_\mathrm{\varepsilon}))\nonumber\\
+&=\bm{M}(\bm{q})^{-1}(\bm{\tau}_\mathrm{\mathrm{ext}}-\hat{\bm{\tau}}_\mathrm{\varepsilon})\;.\label{eqn:qDD_dyn}
+\end{align}
+%
+Using the Laplace transform on~(\ref{eqn:obs_dynamic}) and~(\ref{eqn:qDD_dyn}) and assuming $\bm{M}(\bm{q})$ to change slowly, we achieve the following dynamics:
+%
+\begin{equation}
+%\bm{M}(\bm{q})^{-1}\left(\begin{pmatrix}\frac{\tau_{\mathrm{ext},1}}{1+sK_{O,1}^{-1}}\\\vdots\\\frac{\tau_{\mathrm{ext},n}}{1+sK_{O,n}^{-1}}\end{pmatrix}-\bm{\tau}_\mathrm{ext}\right)
+\bm{e}=\bm{M}(\bm{q})^{-1}\begin{pmatrix}\frac{sk_{\mathrm{O},1}^{-1}\tau_{\mathrm{ext},1}}{1+sk_{\mathrm{O},1}^{-1}} &\dots&\frac{sk_{\mathrm{O},n}^{-1}\tau_{\mathrm{ext},n}}{1+sk_{\mathrm{O},n}^{-1}}\end{pmatrix}^\mathrm{T}\hspace*{-2mm}.\label{eqn:acc_err_dyn}
+\end{equation}
+%
+The error dynamics (\ref{eqn:acc_err_dyn}) consist of a vector with a linear dynamics triggered by $\bm{\tau}_\mathrm{ext}$, which is coupled nonlinearly by the inverted mass matrix to the error $\bm{e}$.
+The estimate $\hat{\ddot{\bm{q}}}$ can be used to calculate $\ddot{\bm{x}}_D$ according to (\ref{eqn:accel_cart}) and therefore the external wrench $\bm{\mathcal{F}}_{\mathrm{ext}}$, as shown next.
+
+\subsection{Dynamic Load Compensation}
+\label{sec:load_comp}
+
+\paragraph{Distal Sensor Case}
+Figure~\ref{fig:fkb} depicts the free body diagram of a distal link containing a force/torque sensor $S$ measuring a wrench $\bm{\mathcal{F}}_S$.
+The left part belongs to the link connected to the base holding the sensor.
+The right part represents the body attached to the sensor generating gravitational and dynamic forces measured in the sensor.
+The body mass is $m_D$ and its inertia tensor $\bm{I}_{D}$.
+%
+\begin{figure}
+\begin{center}
+\includegraphics{figures/freikoerperbild}
+\end{center}
+\caption{Free body diagram of a distal robot link containing a sensor $S$.
+The sensor holds a body with mass $m_D$, center of mass $D$ and inertia $\bm{I}_\mathrm{D}$.
+An external force $\bm{f}_\mathrm{ext}$ and an external moment $\bm{m}_{\mathrm{ext},C}$ act in contact point $C$.}\vspace*{-0.7cm}
+\label{fig:fkb}
+\end{figure}
+%
+Newton's second law yields
+\begin{equation}
+m_D\ddot{\bm{r}}_D=m_D\bm{g}+\bm{f}_\mathrm{ext}-\bm{f}_S\;.
+\end{equation}
+%
+It follows for the \textbf{sensed} external force
+%
+\begin{equation}
+\bar{\bm{f}}_{\mathrm{ext},S}=\bm{f}_S+m_D\ddot{\bm{r}}_D-m_D\bm{g}\;.\label{eqn:fbs}
+\end{equation}
+%
+Obviously, equation~(\ref{eqn:fbs}) shows that the sensor does not measure the pure external forces only, but also forces due to gravity and inertia.
+Thus, $\bm{\mathcal{F}}_S$ has to be corrected in order to obtain the true external wrench.
+
+To derive the external moment, Euler's law of rigid body motion is applied to the center of gravity $D$ of the body:
+%
+\begin{equation}%\small
+\medmuskip=0mu
+\thinmuskip=0mu
+\thickmuskip=0mu
+\bm{I}_{D}\dot{\bm{\omega}}_D+\bm{\omega}_D\times \bm{I}_{D}\bm{\omega}_D=\bm{m}_{\mathrm{ext}}-\bm{m}_S-\bm{r}_{DS}\times\bm{f}_S+\bm{r}_{DC}\times\bm{f}_\mathrm{ext}\;.\label{eqn:mbs}
+\end{equation}
+%
+This leads to the \textbf{sensed} external moment
+%
+\begingroup
+\small
+\begin{align}
+\bar{\bm{m}}_{\mathrm{ext},S}:&=
+\bm{m}_{\mathrm{ext}}+\bm{r}_{SC}\times\bm{f}_\mathrm{ext}\nonumber\\&=
+\bm{m}_S+\bm{I}_{D}\dot{\bm{\omega}}_D+\bm{\omega}_D\times \bm{I}_{D}\bm{\omega}_D+\bm{r}_{DS}\times(\bm{f}_S-\bm{f}_\mathrm{ext})\;.
+\end{align}
+\endgroup
+%
+Equations~(\ref{eqn:fbs}) and~(\ref{eqn:mbs}) result in the \textbf{sensed} external wrench 
+%
+\begingroup % damit spacing in align angepasst werden kann
+\medmuskip=2mu
+\thinmuskip=2mu
+\thickmuskip=2mu
+\small
+\begin{align}
+\bar{\bm{\mathcal{F}}}_{\mathrm{ext},S}&=\begin{pmatrix}
+\bar{\bm{f}}_{\mathrm{ext},S}\\\bar{\bm{m}}_{\mathrm{ext},S}\nonumber
+\end{pmatrix}=\bm{\mathcal{F}}_{S}+\bm{\mathcal{F}}_{c,S}\\
+:&=\bm{\mathcal{F}}_S+\left(\begin{smallmatrix}
+m_D\bm{I}_3 & \bm{0}\\
+m_D\bm{S}(\bm{r}_{SD}) & \bm{I}_{D}
+\end{smallmatrix}\right)
+\left(\left(\begin{smallmatrix}\ddot{\bm{r}}_D\\\dot{\bm{\omega}}_D\end{smallmatrix}\right)-\left(\begin{smallmatrix}
+\bm{g}\\\bm{0}
+\end{smallmatrix}\right)\right)+\left(\begin{smallmatrix}
+\bm{0}\\
+\bm{\omega}_D\times\bm{I}_{D}\bm{\omega}_D
+\end{smallmatrix}\right).\label{eqn:ext_wrench}
+\end{align}
+\endgroup
+%
+$\bm{I}_3$ denotes the three dimensional unit matrix, $\bm{g}$ the Cartesian gravity vector, $\bm{r}_{DS}$ the vector from the center of mass of the inertia attached to the sensor to the sensor and $\bm{0}$ the zero matrix of suitable size.
+All entities are expressed in the world frame.
+Using $\hat{\ddot{\bm{q}}}$ instead of $\ddot{\bm{q}}$ in~(\ref{eqn:accel_cart}) to compute $\hat{\ddot{\bm{x}}}_D$ one obtains the estimated external wrench acting in $S$ as
+%
+\begin{equation}\small
+\medmuskip=2mu
+\thinmuskip=2mu
+\thickmuskip=2mu
+\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}=\bm{\mathcal{F}}_S+\underbrace{\left(\begin{smallmatrix}
+m_D\bm{I}_3 & \bm{0}\\
+m_D\bm{S}(\bm{r}_{SD}) & \bm{I}_{D}
+\end{smallmatrix}\right)
+\left(\left(\begin{smallmatrix}\hat{\ddot{\bm{r}}}_D\\\hat{\dot{\bm{\omega}}}_D\end{smallmatrix}\right)-\left(\begin{smallmatrix}
+\bm{g}\\\bm{0}
+\end{smallmatrix}\right)\right)+\left(\begin{smallmatrix}
+\bm{0}\\
+\bm{\omega}_D\times\bm{I}_\mathrm{D}\bm{\omega}_D
+\end{smallmatrix}\right)}_{\hat{\bm{\mathcal{F}}}_{c,S}}\;.
+\end{equation}
+ 
+\paragraph{Intermediate Sensor Case}
+If the sensor is located within an intermediate link, the compensation wrenches for each body $b$, with center of mass $D_b$, succeeding this sensor become
+%
+\begin{equation}
+\medmuskip=0mu
+\thinmuskip=0mu
+\thickmuskip=0mu
+\small
+\hat{\bm{\mathcal{F}}}_{\mathrm{c},b}=\left(\begin{smallmatrix}
+m_{D_b}\bm{I}_3 & \bm{0}\\
+m_{D_b}\bm{S}(\bm{r}_{SD_b}) & \bm{I}_{D_b}
+\end{smallmatrix}\right)
+\left(\left(\begin{smallmatrix}\hat{\ddot{\bm{r}}}_{D_b}\\\hat{\dot{\bm{\omega}}}_{D_b}\end{smallmatrix}\right)-\left(\begin{smallmatrix}
+\bm{g}\\\bm{0}
+\end{smallmatrix}\right)\right)+\left(\begin{smallmatrix}
+\bm{0}\\
+\bm{\omega}_{D_b}\times\bm{I}_{D_b}\bm{\omega}_{D_b}
+\end{smallmatrix}\right)
+\end{equation}
+%
+and simply have to be summed up for compensation.
+Note that this operation explicitly corresponds to the Newton- Euler method for calculating multibody dynamics.
+Therefore, in this case, the estimated external wrench sensed in $S$ becomes
+%
+\begin{equation}
+\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}=\bm{\mathcal{F}}_S+\sum_{b\in N(b_\mathrm{s})}\hat{\bm{\mathcal{F}}}_{\mathrm{c},b}=:\bm{\mathcal{F}}_S+\hat{\bm{\mathcal{F}}}_{\mathrm{c},S}\;.\label{eqn:cmp}
+\end{equation}
+%
+$N(b_\mathrm{s})$ denotes the set of all bodies succeeding link $b_\mathrm{s}$, that contains the sensor in the kinematic chain.
+For multiple sensors in a kinematic chain (e.g. in each joint), the compensation wrenches can be calculated recursively to avoid multiple calculations, see Algorithm~\ref{alg:comp}.
+The code uses the set $M(S)$, denoting all sensors $T\in M(S)$ directly succeeding $S$.
+This means there is no further sensor between $S$ and an element of $M(S)$ in the kinematic chain connecting the two.
+%
+\begin{algorithm}
+\caption{Dynamic load compensation for multiple force/torque sensors located along the structure}
+\textbf{function} $\hat{\bm{\mathcal{F}}}_{\mathrm{c},S} =$ calculate\_F\_c($S$)\\
+\Begin{
+	$\hat{\bm{\mathcal{F}}}_{\mathrm{c},S}:=0$\\
+	\For {all bodies $b$ directly succeeding $S$}{
+			$\hat{\ddot{\bm{x}}}_{D_b}=\bm{J}_{D_b}\hat{\ddot{\bm{q}}}+\dot{\bm{J}}_{D_b}\dot{\bm{q}}$\\
+			$\small\hat{\bm{\mathcal{F}}}_{\mathrm{c},S}+=\left(\begin{smallmatrix}
+			m_{D_b}\bm{I}_3 & \bm{0}\\
+			m_{D_b}\bm{S}(\bm{r}_{SD_b}) & \bm{I}_{D_b}
+			\end{smallmatrix}\right)
+			\left(\hat{\ddot{\bm{x}}}_{D_b}-\left(\begin{smallmatrix}
+			\bm{g}\\\bm{0}
+			\end{smallmatrix}\right)\right)$\\
+			$\quad\quad\quad\quad\quad+\left(\begin{smallmatrix}
+			\bm{0}\\
+			\bm{\omega}_{D_b}\times\bm{I}_{D_b}\bm{\omega}_{D_b}
+			\end{smallmatrix}\right)$
+	}
+	\For {all $T\in M(S)$}{
+			$\hat{\bm{\mathcal{F}}}_{\mathrm{c},T} =$ calculate\_F\_c($T$)\\
+			$\hat{\bm{\mathcal{F}}}_{\mathrm{c},S}+=\hat{\bm{\mathcal{F}}}_{\mathrm{c},T}+
+			\begin{pmatrix}
+			\bm{0}\\\bm{r}_{ST}\times\hat{\bm{f}}_{\mathrm{ext},T}
+			\end{pmatrix}$
+	}
+}
+\label{alg:comp}
+\end{algorithm}
+
+\subsection{Generalized Contact Force Estimation}
+
+It is to be considered for the estimation of the contact wrenches and also for the collision detection that the observer detects generalized external forces originating from all external contacts.
+In particular with a humanoid, we usually have desired contacts (e.g. at the feet during locomotion or hands during manipulation), these contact forces have to be measured with force/torque sensors close to the corresponding end-effectors (e.g. at the wrists and ankles) in order to enable exclusion from the observed generalized forces and avoid undesired collision detections (``false alarms'').
+
+The full scheme consisting of observer and compensation is depicted in Fig.~\ref{fig:flowchart}.
+For sake of simplicity force/torque sensors in all distal links of the arms and legs are assumed, denoted by the set $S_\mathrm{distal}$.
+The more general case, where one or more distal links do not have a force/torque sensor will be left for future work at this point.
+The general consequence of such a setup would be a limited ability to detect, isolate and identify collisions occurring between the end-effector and the most distal force/torque sensor in the kinematic chain.
+%
+\begin{figure}
+\begin{center}
+\includegraphics{figures/flowchart_compensation}
+\end{center}
+\caption{Exclusion of estimated desired external wrenches at the distal links $\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}$ measured by force/torque sensors from the observed generalized  forces of~(\ref{eqn:obs_qDD}).
+These wrenches are therefore compensated according to~(\ref{eqn:ext_wrench}).}\vspace*{-0.8cm}
+\label{fig:flowchart}
+\end{figure}
+%
+% TODO: Keine joint forces, sondern generalized coordinates
+The generalized external forces caused by the external wrenches at the distal links are subtracted from the observed generalized forces to obtain the estimated generalized forces originating from unexpected collisions $\hat{\bm{\tau}}_\mathrm{ext,col}$ as
+%
+\begin{equation}
+\hat{\bm{\tau}}_\mathrm{ext,col}=\hat{\bm{\tau}}_\varepsilon-\sum_ {S\in S_\mathrm{distal}}\bm{J}^\mathrm{T}(S,i_S)\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}\;,\label{eqn:obs_cmp}
+\end{equation}
+%
+where $i_S$ denotes the link containing the sensor $S$.
+Now that the force/torque sensors are compensated and the desired external wrenches of the distal parts of the robot are excluded from the observed generalized external forces, collision detection can be performed.
+
+\subsection{Collision Detection}
+
+
+Collision detection is simply done via thresholding the generalized forces and estimated external wrenches
+%
+\begin{equation}
+\begin{split}
+\hat{\bm{\tau}}_\mathrm{ext,col}>\bm{\tau}_\mathrm{thresh} \text{ (element wise) or}\\
+\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}>\bm{\mathcal{F}}_{S,\mathrm{thresh}} \text{ (element wise).}
+\label{eqn:threshold}
+\end{split}
+\end{equation}
+%
+The information coming with evaluating (\ref{eqn:threshold}) can also be used to roughly estimate the contact location.
+Contacts can always be located behind the last joint or sensor exceeding the threshold and before the next sensor not exceeding it, respectively.
+To gain more precise information about the contact link, the external wrenches $\bm{\mathcal{F}}_{\mathrm{ext},k}$ are needed (see also Fig.~\ref{fig:ueberblick}).
+The next section shows, how to obtain $\bm{\mathcal{F}}_{\mathrm{ext},k}$ and how to use it for collision isolation.
+
+\section{Collision Isolation}
+\label{sec:isolation}
+Collision isolation cannot be generally handled for the case when external moments act along the robot. 
+For this case, the contact location of an additionally acting contact force cannot be located exactly. 
+Thus, for solving the isolation problem we assume no external moments to be acting on the robot ($\bm{m}_{\mathrm{ext},k}=\bm{0}$), which is a realistic assumption for most undesired collision situations.
+If this assumption does not hold for a certain contact point, the isolation of this particular contact point will fail.
+However, this does not influence the isolation and identification of other contact points.
+In summary, isolation is done via the following four step approach:
+%
+\begin{enumerate}
+\item Isolate the contact link,
+\item estimate the external wrench acting on the respective contact link,
+\item calculate the line of action of the force estimated and
+\item determine the exact contact point by intersecting the line of action with the known robot geometry.
+\end{enumerate}
+%
+For steps 2 and 3 two main scenarios have to be distinguished: single contact and multi contact scenarios.
+The single contact scenario can be handled with joint torque sensing only, while the multi contact scenario often requires additional force/torque sensors in order to distinguish the different contacts.
+
+\subsection{Single Contact}
+
+\paragraph{Step 1}
+
+The contact link can be found based on the fact that a contact cannot produce torques in joints appearing behind the contact location along the kinematic chain.
+E.g., a contact at the upper arm cannot produce torques in the wrist.
+Therefore, the contact link index $i$ can be isolated by
+%
+\begin{equation}
+i=\max\{j|\tau_{\mathrm{ext,col},j} \neq 0\}
+\label{eqn:contact_link}
+\end{equation}
+%
+given the convention that joint $j$ connects link $j$ to the preceding links of the robot.
+Note that due to the tree structure of a humanoid, this procedure can lead to multiple potential contact links. It has to be noted also that due to modeling and measurement errors, eq.~(\ref{eqn:contact_link}) is subject to thresholding.
+Also some forces, e.g. forces parallel to the axis of the joint connected to the link they act on, do not produce torques at this joint. This may lead to erroneous estimation of the contact link. However, this problem can be tackled with a correction step introduced at the end of step~4.
+
+\paragraph{Step 2}
+
+When the contact link $i$ with origin $O_i$ is found, the external wrench $\bm{\mathcal{F}}_i$ acting on this respective link may be estimated via the Moore-Penrose pseudo inverse of $\bm{J}^\mathrm{T}(O_i,i)$:
+%
+\begin{equation}
+\hat{\bm{\mathcal{F}}}_i=(\bm{J}^\mathrm{T}(O_i,i))^\#\hat{\bm{\tau}}_\mathrm{ext,col}\;.\label{eqn:F_i}
+\end{equation}
+%
+\paragraph{Step 3}
+\label{sec:isolation_step3}
+For a single external wrench $\bm{\mathcal{F}}_\mathrm{ext}$ acting at the contact location $\bm{r}_C$, the wrench $\bm{\mathcal{F}}_i$ in $O_i$ may be obtained with the adjoint matrix $\bm{A}(C,O_i)$ via
+%
+\begin{equation}
+\bm{\mathcal{F}}_i=\bm{A}^\mathrm{T}(C,O_i)\bm{\mathcal{F}}_\mathrm{ext}
+=\begin{pmatrix} \bm{I}_3 & \bm{0}\\
+\bm{S}(\bm{r}_{O_iC}) & \bm{I}_3\end{pmatrix}
+\bm{\mathcal{F}}_\mathrm{ext}\;.\label{eqn:ext_wrench_i}
+\end{equation}
+%
+Recalling the assumption of absence of external moments ($\bm{m}_\mathrm{ext}=\bm{0}$) this results in
+%
+\begin{equation}
+\bm{\mathcal{F}}_i=\begin{pmatrix} \bm{f}_i\\\bm{m}_i\end{pmatrix}
+=\begin{pmatrix}
+\bm{f}_\mathrm{ext}\\\bm{S}(\bm{r}_{O_iC})\bm{f}_\mathrm{ext}
+\end{pmatrix}=\begin{pmatrix}
+\bm{f}_i\\\bm{S}^\mathrm{T}(\bm{f}_i)\bm{r}_{O_iC}
+\end{pmatrix}.\label{eqn:contact_pkt}
+\end{equation}
+%
+From~(\ref{eqn:contact_pkt}), the line of action of the force can be derived.
+It is described by $\bm{r}_{A}+\lambda\bm{f}_i/\|\bm{f}_i\|$ for $\lambda\in\mathbb{R}$ with
+%
+\begin{equation}
+\bm{r}_A=\bm{r}_{O_i}+\bm{r}_{O_iA}=\bm{r}_{O_i}+\left(\bm{S}^\mathrm{T}(\bm{f}_i)\right)^\#\bm{m}_i\;.
+\label{equ:force_loa_point}
+\end{equation}
+%
+
+\paragraph{Step 4}
+\label{sec:isolation_step4}
+Due to the properties of the pseudo inverse and the rank deficit of skew symmetric matrices, $\bm{r}_{A}$ is the point along the line of action of the force, which lies closest to the origin and therefore is not identical to $\bm{r}_C$ in general.
+However, it is possible to calculate $\bm{r}_C$ by intersecting the line of action of the force with the link geometry of the contact link.
+If this intersection problem has more than one solution, the one with the smallest parameter $\lambda$ can e.g. be chosen.
+This choice is made when we assume a pushing force, which is most common for unexpected collisions.
+However, all candidates can be generated and utilized if more sophisticated processing is done at a higher level of abstraction.
+
+If the contact link is not estimated correctly, the contact point $\bm{r}_C$ can nonetheless be computed for the single contact case, as the base movement provides sufficient information to determine it.
+This happens e.g. if the contact force is parallel to the axis of the joint connected to the link it is acting on or line of action of the force crosses this joint axis.
+In this case, the line of action may happen to not intersect the estimated contact link.
+Therefore, the contact point $\bm{r}_C$ may be determined correctly by intersecting the line of action also with the subsequent links.
+
+\subsection{Multiple Contacts}
+
+For the case of multiple contacts, above method may be used in combination with compensated force/torque sensing. Then, for each sensor, a contact in the kinematic chain following the sensor may be detected by applying steps 3 and 4 for the compensated (in the sense of~(\ref{eqn:ext_wrench})~or~(\ref{eqn:cmp})) wrenches $\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}$ of the sensors.
+In case of more than one sensor and more than one contact in the kinematic chain, the wrenches originating from contacts already measured by sensors closer to the distal end of the chain have to be subtracted from the measured wrench.
+As a sensor sees all contact wrenches acting on subsequent sensors with an additional moment because of the change in lever of the force, in addition to the external wrenches exclusively seen by it, this leads to
+%
+\begin{equation}
+\hat{\bm{\mathcal{F}}}_{\mathrm{ext},k}=\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}-\sum_{T\in N(S)}\left(\hat{\bm{\mathcal{F}}}_{\mathrm{ext},T}+\begin{pmatrix}
+\bm{0}\\\bm{r}_{ST}\times\hat{\bm{f}}_{\mathrm{ext},T}
+\end{pmatrix}\right).\label{eqn:cmp_ext_vorher}
+\end{equation}
+%
+Considering the situation of Fig.~\ref{fig:humanoid_contact_situation} for example, two contacts can be detected at the right arm.
+One by sensor $S_3$ and one by sensor $S_1$, as long as one contact is behind $S_1$ and the other between $S_3$ and $S_1$.
+As this is the case for $\bm{\mathcal{F}}_{\mathrm{ext},2}$ and $\bm{\mathcal{F}}_{\mathrm{ext},5}$ these two wrenches may be estimated correctly.
+
+If no force/torque sensors are available the correct isolation of multiple contacts is only possible if the contact links are estimated correctly and are far enough away from the base, which means that the Jacobians of the contact links together include at least 6~DOFs per wrench to estimate. For this, the contact wrenches may be calculated by stacking the Jacobians together and calculating the according pseudoinverse
+%
+\begin{equation}
+\medmuskip=3mu
+\thinmuskip=3mu
+\thickmuskip=3mu
+\left(
+\bm{\mathcal{F}}_{i_1}^\mathrm{T} \ldots \bm{\mathcal{F}}_{i_n}^\mathrm{T}\right)^\mathrm{T}=\left(
+\bm{J}^\mathrm{T}(O_{i_1},i_1) \ldots  \bm{J}^\mathrm{T}(O_{i_n},i_n)\right)^\#\bm{\tau}_\mathrm{ext,col}\;.\label{eqn:multi_iso}
+\end{equation}
+%
+Note that in case of a singularity in the Jacobians additional DOFs may be required to estimate the wrenches correctly.
+Thereafter, steps 3 and 4 can be applied to each estimated wrench $\bm{\mathcal{F}}_{i}$. This step may be considered  a generalization of eq. (6) in \cite{OttHenLee2013}.
+
+\section{Collision Identification -- Part II}
+
+Now that the contact points are determined, the full contact Jacobians
+%
+\begin{equation}
+\bm{J}(C,i)=\bm{A}(C,O_i)\bm{J}(O_i,i)
+\end{equation}
+%
+may be computed.
+Similar to~(\ref{eqn:multi_iso}) they can be used to identify the external wrenches
+%
+\begin{equation}
+\medmuskip=1mu
+\thinmuskip=1mu
+\thickmuskip=1mu
+\left(
+\bm{\mathcal{F}}_\mathrm{ext,1}^\mathrm{T} \ldots \bm{\mathcal{F}}_{\mathrm{ext},n}^\mathrm{T}\right)^\mathrm{T}=\left(
+\bm{J}^\mathrm{T}(C_1,i_1) \ldots \bm{J}^\mathrm{T}(C_n,i_n)\right)^\#\bm{\tau}_\mathrm{ext,col}\;.
+\label{eqn:force_identification}
+\end{equation}
+%
+This step is only neccessary, if the contact points are found in different links than determined by (\ref{eqn:contact_link}).
+In this case, measurements of additional joints are used to improve the result of (\ref{eqn:F_i}).
+Otherwise, the inverse of (\ref{eqn:ext_wrench_i}) can be used directly to calculate the contact wrenches.
+For wrenches identified with a force/torque sensor, no action has to be taken in this step, as the corrected wrenches are already the best estimates.
+Figure~\ref{fig:ueberblick} depicts an overview of the entire algorithm.
+%
+\begin{figure}
+\begin{center}
+\includegraphics{figures/ueberblick}
+\end{center}
+\caption{An overview of the collision detection isolation and identification algorithm.
+The more information is used, the more information can be obtained from the collision detection step.
+If the collision detection is based on $\hat{\bm{\tau}}_\mathrm{ext,col}$ only, the contact cannot be fully located.
+If $\hat{\bm{\mathcal{F}}}_{\mathrm{ext},S}$ is used in addition, the contact can be located to the parts of the robot lying between the detecting and the following sensors.
+If the full $\hat{\bm{\mathcal{F}}}_{\mathrm{ext},k}$ are available, collision detection can be done on a per link basis.}\vspace*{-0.7cm}
+\label{fig:ueberblick}
+\end{figure}
+%
+In the next section, the proposed algorithm is validated in different scenarios with a simulated Atlas robot.
+

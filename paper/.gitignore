@@ -1,0 +1,6 @@
+*.aux
+*.bbl
+*.blg
+*.log
+collhdl_ICRA_17.pdf
+*.synctex.gz

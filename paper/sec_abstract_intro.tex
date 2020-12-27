@@ -1,0 +1,98 @@
+% !TEX root = collhdl_ICRA_17.tex
+
+\title{\LARGE \bf
+Collision Detection, Isolation and Identification for Humanoids
+}
+
+\author{Jonathan Vorndamme, Moritz Schappler and Sami Haddadin$^{1}$
+% <-this % stops a space
+\thanks{$^{1}$The authors are members of the Institute of Automatic Control at Leibniz Universit\"at Hannover, {\tt\small lastname@irt.uni-hannover.de}.
+\newline
+This work has been partially funded by the
+European Union’s Horizon 2020 research and innovation programme under grant agreement No 688857 (``SoftPro'') and by the Alfried-Krupp Award for young professors.}
+}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+High-performance collision handling, which is divided into the five phases \emph{detection}, \emph{isolation}, \emph{estimation}, \emph{classification} and \emph{reaction}, is a fundamental robot capability for safe and sensitive operation/interaction in unknown environments.
+For complex humanoid robots collision handling is obviously significantly more complex than for classical static manipulators. 
+In particular, the robot stability during the collision reaction phase has to be carefully designed and relies on high fidelity contact information that is generated during the first three phases. 
+In this paper, a unified real-time algorithm is presented for determining unknown contact forces and contact locations for humanoid robots based on proprioceptive sensing only, i.e. joint position, velocity and torque, as well as force/torque sensing along the structure. 
+The proposed scheme is based on nonlinear model-based momentum observers that are able to recover the unknown contact forces and the respective locations.
+The dynamic loads acting on internal force/torque sensors are also corrected based on a novel nonlinear compensator. 
+The theoretical capabilities of the presented methods are evaluated in simulation with the \emph{{A}tlas} robot.
+In summary, we propose a full solution to the problem of \emph{collision detection}, \emph{collision isolation} and \emph{collision identification} for the general class of humanoid robots. 
+
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction and State of the Art}
+
+Humanoid robots executing manipulation tasks are usually in contact with their environment at several contact points.
+Figure~\ref{fig:manip} depicts an \emph{{A}tlas} robot in a typical manipulation scenario. The robot is in contact with its environment at the feet via ground contacts and the hands for executing a desired manipulation task. Furthermore, an unwanted contact with a colliding object at the knee is indicated. 
+In order to correctly react to such collisions the robot has to have the ability to detect collisions, analyze the contact situation(s) and react accordingly. 
+In summary, the collision has to be \emph{detected}, \emph{isolated} and \emph{identified}.
+
+Several approaches to the problem of \emph{collision detection} for manipulators exist already. 
+In \cite{YamadaHirHuaUme1997,SuitaYamTsuIma1995} a model based reference torque is compared to the actuator torque measured via motor currents. 
+\cite{MorinagaKos2003} uses a similar approach with an adaptive impedance controller. \cite{TakakuraMurOhn1989} observes disturbance torques on a per joint basis, ignoring the coupling between the joints. All of the above methods employ time invariant thresholds for collision detection.
+A drawback of all the aforementioned methods is that they require acceleration measurements, which generally introduce high noise.
+
+Usually, approaches to finding the contact location (\emph{collision isolation}) utilize tactile skins \cite{DahiyaMitValChe2013,DeMaria201260,LumelskyChe1993,Strohmayr2012}. 
+With a suitable tactile skin, the contact location can be found precisely and robustly. 
+However, it is obviously desirable to be able to do so without the need of additional sensors, using only proprioceptive sensing. 
+\emph{Collision identification} aims for finding the timely evolution of the external contact wrench $\bm{\mathcal{F}}_\mathrm{ext}(t)$ and the external generalized force $\bm{\tau}_\mathrm{ext}(t)$.
+External joint torque estimation for serial link robots with fixed base was proposed in \cite{DeLucaMat2005}, which was then extended to and validated for flexible joint robots with the DLR lightweight robot in \cite{DeLucaAlbHadHir2006}.
+This was the first method to simultaneously detect collisions, find the contact link (not location) and estimate the external torques, i.e. solve the first three phases of the collision handling problem.
+The approach utilizes the decoupling property of a generalized momentum based disturbance observer \cite{DeLucaMat2003,KuntzeFreGieMil2003}, which does not rely on the measurement of accelerations.
+An extension to the scheme to use time variant thresholds for collision detection based on the estimated modeling error can be found in \cite{SotoudehnejadKer2014,SotoudehnejadTakKerPol2012}.
+%
+\begin{figure}
+\begin{center}
+\graphicspath{{figures/atlas_box_strobo/}}
+\input{figures/atlas_box_strobo/box_strobo.pdf_tex}
+\end{center}
+\vspace*{-0.2cm}
+\caption{\emph{Atlas} robot performing a typical manipulation task. 
+The robot is in contact with its environment at the feet and hands (desired for locomotion and manipulation) as well as at the upper knee (unwanted collision).}\vspace*{-0.7cm}
+\label{fig:manip}
+\end{figure}
+
+Contact wrenches are often determined with the help of force/torque sensors. 
+\cite{OttHenLee2013} uses a generalized momentum based disturbance observer with directly excluded measured foot forces to estimate only external joint torques resulting from manipulation for the humanoid robot \emph{TORO}. For contact force estimation contacts at the hands were assumed.
+In \cite{HyonHalChe2007} the ground contact forces at the feet of a humanoid robot are estimated with an optimal load distribution approach based on desired gross applied force. For the \emph{NASA} robot \emph{Valkyrie} these are measured with force/torque sensors located in the ankles \cite{RadfordStrHamMeh2015}.
+
+In this paper, we develop a model based real-time method for detecting contacts, finding contact locations and estimating the corresponding contact wrenches in the absence of external sensors, i.e., based on proprioceptive sensing only.
+The scheme does neither require prior knowledge of the number nor of the location of the contacts.
+Furthermore, and in contrast to existing work, it considers also arbitrarily placed load compensated force/torque sensors along the robot structure.
+Given the condition that the sensory setup is sufficient to estimate the acting contact wrenches, the only assumption required solely for collision isolation is the absence of external moments. 
+The proposed method is verified in simulation. In summary, the main contributions of this paper are
+%
+\begin{enumerate}
+\item the unified solution of the \emph{collision detection, isolation and identification} for humanoid robots based on proprioceptive sensors only,
+\item a new real-time method for acceleration estimation and load compensation in humanoid robots for force/torque sensors that are arbitrarily located in the kinematic robot chain,
+\item a novel method for estimating contact location and contact forces in single contact scenarios for humanoid robots and the
+\item extension to multi-contact situations with and without the help of additional force/torque sensors in the kinematic chain.
+\end{enumerate}
+%
+This paper focuses on the theoretical aspects of the proposed methods. The algorithms are therefore evaluated in basic simulation setups. 
+Current research efforts aim for investigating the robustness of the proposed method in more realistic simulations and real world setups.
+
+The remainder of the paper is structured as follows. 
+In Section~\ref{sec:task_description} the considered robot model is introduced and the overall problem description is formalized. 
+Section~\ref{sec:collision_identification_i} outlines our method for compensating dynamic loads in force/torque sensors along the kinematic chains in humanoid robots. 
+Then, Section~\ref{sec:isolation} outlines the solution to detecting collisions, finding contact locations and estimating the contact forces. 
+Thereafter, in Section~\ref{sec:simu}, various aspects about the developed algorithms are evaluated for a simulated \emph{{A}tlas} robot. 
+Finally, Sec.~\ref{sec:conclusion} concludes the paper and provides an outline of future work.
+
+
+
+

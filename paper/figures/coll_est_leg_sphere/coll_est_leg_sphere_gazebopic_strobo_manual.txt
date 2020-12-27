@@ -1,0 +1,18 @@
+GIMP
+Fenster->andockbar->Ebenen
+Bilder (png) reinziehen
+Deckkraft der Ebenen einstellen (alle 20% z.B.)
+
+
+InkScape
+png importieren
+Striche zeichnen
+exportieren als pdf+pdf_tex
+Pfad in pdf_tex korrigieren
+
+Komprimieren
+Source: https://pandemoniumillusion.wordpress.com/2008/05/07/compress-a-pdf-with-pdftk/
+    cd ~/IRT_DRC/collision_handling/doc/figures/coll_est_leg_sphere
+    pdf2ps coll_est_leg_sphere_gazeboscreenshot_ausschnitt_strobo_ausschnitt.pdf coll_est_leg_sphere_gazeboscreenshot_ausschnitt_strobo_ausschnitt_large.ps
+    ps2pdf coll_est_leg_sphere_gazeboscreenshot_ausschnitt_strobo_ausschnitt_large.ps coll_est_leg_sphere_gazeboscreenshot_ausschnitt_strobo_ausschnitt_small.pdf
+
